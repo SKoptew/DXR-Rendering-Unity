@@ -1,0 +1,57 @@
+//#include "HLSLSupport.cginc"
+//#include "UnityShaderVariables.cginc"
+#include "RayPayload.hlsl"
+
+RaytracingAccelerationStructure _SceneAccelerationStructure;
+
+RWTexture2D<float4> _RenderTarget;
+float4x4            _InvViewMatrix;
+
+float3 _FrustumBottomLeftDirWS;
+float3 _FrustumHorizDirWS;
+float3 _FrustumVertDirWS;
+
+#pragma max_recursion_depth 1
+
+
+[shader("miss")]
+void MissShader(inout RayPayload payload : SV_RayPayload)
+{
+	payload.color = WorldRayDirection().xyz * 0.5 + 0.5;
+}
+
+[shader("raygeneration")]
+void RaygenShader()
+{
+    uint2 dispatchIdx = DispatchRaysIndex().xy;
+    uint2 dispatchDim = DispatchRaysDimensions().xy;
+       
+    float2 frameCoord = float2(dispatchIdx.x, dispatchIdx.y) + float2(0.5, 0.5);
+    float2 UV         = frameCoord / float2(dispatchDim.x, dispatchDim.y);    
+    
+    float3 viewDirWS = normalize(_FrustumBottomLeftDirWS + UV.x * _FrustumHorizDirWS
+                                                         + UV.y * _FrustumVertDirWS);
+    
+    RayDesc ray;
+    ray.Origin    = float3(_InvViewMatrix[0][3], _InvViewMatrix[1][3], _InvViewMatrix[2][3]);
+    ray.Direction = viewDirWS;
+    ray.TMin      = 0.0;
+    ray.TMax      = 1e20f;    
+    
+    RayPayload payload;
+    payload.color = float3(0,0,0);    
+    
+    
+    const uint missShaderID = 0;
+    TraceRay(_SceneAccelerationStructure, 
+             0,                  // RayFlags
+             0xFF,               // InstanceInclusionMask
+             0,                  // RayContributionToHitGroupIndex
+             1,                  // MultiplierForGeometryContributionToHitGroupIndex
+             missShaderID,
+             ray,
+             payload);            
+        
+    _RenderTarget[dispatchIdx] = float4(payload.color, 1.0);    
+    //_RenderTarget[dispatchIdx] = float4(UV, 0.0, 1.0);
+}
