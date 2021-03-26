@@ -7,6 +7,10 @@ RaytracingAccelerationStructure _SceneAccelerationStructure;
 RWTexture2D<float4> _RenderTarget;
 float4x4            _InvViewMatrix;
 
+TextureCube<half3> _EnvironmentTex;
+SamplerState        sampler_linear_repeat;
+half               _EnvironmentExposure;
+
 float3 _FrustumBottomLeftDirWS;
 float3 _FrustumHorizDirWS;
 float3 _FrustumVertDirWS;
@@ -17,7 +21,8 @@ float3 _FrustumVertDirWS;
 [shader("miss")]
 void MissShader(inout RayPayload payload : SV_RayPayload)
 {
-	payload.color = WorldRayDirection().xyz * 0.5 + 0.5;
+    half3 envColor = _EnvironmentTex.SampleLevel(sampler_linear_repeat, WorldRayDirection(), 0.0);
+	payload.color = envColor * _EnvironmentExposure;
 }
 
 [shader("raygeneration")]
@@ -50,8 +55,9 @@ void RaygenShader()
              1,                  // MultiplierForGeometryContributionToHitGroupIndex
              missShaderID,
              ray,
-             payload);            
+             payload);
+         
+     float4 finalColor = float4(payload.color, 1.0);
         
-    _RenderTarget[dispatchIdx] = float4(payload.color, 1.0);    
-    //_RenderTarget[dispatchIdx] = float4(UV, 0.0, 1.0);
+    _RenderTarget[dispatchIdx] = finalColor;    
 }

@@ -7,8 +7,9 @@ public class RayTracingEffect : MonoBehaviour
     public LayerMask        rtLayerMask = -1;
     public RayTracingAccelerationStructure.RayTracingModeMask rtModeMask = RayTracingAccelerationStructure.RayTracingModeMask.Everything;
     public RayTracingShader rtShader;
-  //public Light            dirLight;
-  //public Cubemap          envMap;
+    public Cubemap          environmentCubemap;
+    [Range(0,8)]
+    public float            environmentExposure = 1f;
 
     private RenderTexture                   _rtTargetTexture;
     private RayTracingAccelerationStructure _rtAccStructure;
@@ -23,6 +24,8 @@ public class RayTracingEffect : MonoBehaviour
         //-- local
         public static readonly int _SceneAccelerationStructure = Shader.PropertyToID("_SceneAccelerationStructure");
         public static readonly int _RenderTarget               = Shader.PropertyToID("_RenderTarget");
+        public static readonly int _EnvironmentTex             = Shader.PropertyToID("_EnvironmentTex");
+        public static readonly int _EnvironmentGamma           = Shader.PropertyToID("_EnvironmentExposure");
         public static readonly int _InvViewMatrix              = Shader.PropertyToID("_InvViewMatrix");
         public static readonly int _FrustumBottomLeftDirWS     = Shader.PropertyToID("_FrustumBottomLeftDirWS");
         public static readonly int _FrustumHorizDirWS          = Shader.PropertyToID("_FrustumHorizDirWS");
@@ -61,6 +64,8 @@ public class RayTracingEffect : MonoBehaviour
         
         rtShader.SetTexture(ShaderID._RenderTarget,  _rtTargetTexture);
         rtShader.SetMatrix( ShaderID._InvViewMatrix, cam.cameraToWorldMatrix);
+        rtShader.SetTexture(ShaderID._EnvironmentTex, environmentCubemap);
+        rtShader.SetFloat  (ShaderID._EnvironmentGamma, Mathf.GammaToLinearSpace(environmentExposure));
 
         var camOrigin = cam.transform.position;
         var frustumBottomLeftDirWS  = (cam.ViewportToWorldPoint(new Vector3(0, 0, cam.nearClipPlane)) - camOrigin).normalized;
@@ -127,7 +132,7 @@ public class RayTracingEffect : MonoBehaviour
             return false;
         }
         
-        if (cam == null || rtShader == null || _rtAccStructure == null)
+        if (environmentCubemap == null || cam == null || rtShader == null || _rtAccStructure == null)
             return false;
 
         return true;
