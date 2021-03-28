@@ -67,8 +67,7 @@ void ClosestHitMain(inout RayPayload payload, AttributeData attribs : SV_Interse
 
 
     float2 uv =  v.uv * _MainTex_ST.xy + _MainTex_ST.zw;
-    float4 basecolor = _MainTex.SampleLevel(sampler_linear_repeat, uv, 0);
-    basecolor *= _Color;
+    float4 basecolor = _MainTex.SampleLevel(sampler_linear_repeat, uv, 0) * _Color;
 
     float attenuation = saturate(dot(_WorldSpaceLightPos0.xyz, normalWS));
     float3 col = basecolor.rgb * _LightColor0.rgb * _LightColor0.w * attenuation;

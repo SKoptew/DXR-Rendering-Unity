@@ -15,7 +15,7 @@ float3 _FrustumBottomLeftDirWS;
 float3 _FrustumHorizDirWS;
 float3 _FrustumVertDirWS;
 
-#pragma max_recursion_depth 1
+#pragma max_recursion_depth 10
 
 
 [shader("miss")]
@@ -44,7 +44,8 @@ void RaygenShader()
     ray.TMax      = 1e20f;    
     
     RayPayload payload;
-    payload.color = float3(0,0,0);    
+    payload.color = float3(0,0,0);
+    payload.bounceIndex = 0;
     
     
     const uint missShaderID = 0;
