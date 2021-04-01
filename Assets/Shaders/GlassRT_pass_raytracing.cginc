@@ -100,8 +100,8 @@ void ClosestHitMain(inout RayPayload payload, AttributeData attribs : SV_Interse
                                       attribs.barycentrics.y);
     
     Vertex v = InterpolateVertices(v0, v1, v2, barycentricCoords);
-
-    //-------------------------------
+    //----------------------------------------------------------------------------
+    
     float3 positionWS = mul(ObjectToWorld(), float4(v.positionOS, 1.0));
     float2 uv         =  v.uv * _MainTex_ST.xy + _MainTex_ST.zw;
     float4 basecolor  = _MainTex.SampleLevel(sampler_linear_repeat, uv, 0) * _Color;
@@ -122,12 +122,13 @@ void ClosestHitMain(inout RayPayload payload, AttributeData attribs : SV_Interse
         RayPayload refractedPayload;
         {
             refractedPayload.color = 0;
+            refractedPayload.positionWS = 0.0;
             refractedPayload.bounceIndex = payload.bounceIndex + 1;
             
             RayDesc ray;
-            ray.Origin    = positionWS + 0.001f * refractedRayWS;
+            ray.Origin    = positionWS;
             ray.Direction = refractedRayWS;
-            ray.TMin      = 0;
+            ray.TMin      = 0.0001f;
             ray.TMax      = 1e20f;
         
             TraceRay(_SceneAccelerationStructure, 0, 0xFF, 0, 1, 0, ray, refractedPayload);
@@ -137,12 +138,13 @@ void ClosestHitMain(inout RayPayload payload, AttributeData attribs : SV_Interse
         RayPayload reflectedRayPayload;
         {
             reflectedRayPayload.color = 0;
+            reflectedRayPayload.positionWS = 0.0;
             reflectedRayPayload.bounceIndex = payload.bounceIndex + 1;
         
             RayDesc ray;
-            ray.Origin    = positionWS + 0.001f * reflectedRayWS;
+            ray.Origin    = positionWS;
             ray.Direction = reflectedRayWS;
-            ray.TMin      = 0;
+            ray.TMin      = 0.0001f;
             ray.TMax      = 1e20f;
         
             TraceRay(_SceneAccelerationStructure, 0, 0xFF, 0, 1, 0, ray, reflectedRayPayload);            
@@ -154,15 +156,17 @@ void ClosestHitMain(inout RayPayload payload, AttributeData attribs : SV_Interse
         
         payload.color = lerp(refractedPayload.color, reflectedRayPayload.color, refl);
 
-        // direct lighting for first bounce
+        // direct lighting (and positionWS for shadow calc) for first bounce
         if (payload.bounceIndex == 0)
         {
             float3 lightDirWS = normalize(_WorldSpaceLightPos0.xyz - positionWS);
             payload.color += pow(max(0.0, dot(reflectedRayWS, lightDirWS)), _SpecularPower) * (_LightColor0.rgb * _LightColor0.w) * basecolor;
+            payload.positionWS = positionWS;
         }
     }
     else
     {
-        payload.color = basecolor;
+        payload.color      = basecolor;
+        payload.positionWS = positionWS;
     }
 }

@@ -1,5 +1,5 @@
 //#include "HLSLSupport.cginc"
-//#include "UnityShaderVariables.cginc"
+#include "UnityShaderVariables.cginc"
 #include "RayPayload.hlsl"
 
 RaytracingAccelerationStructure _SceneAccelerationStructure;
@@ -22,8 +22,16 @@ float3 _FrustumVertDirWS;
 void MissShader(inout RayPayload payload : SV_RayPayload)
 {
     half3 envColor = _EnvironmentTex.SampleLevel(sampler_linear_repeat, WorldRayDirection(), 0.0);
-	payload.color = envColor * _EnvironmentExposure;
+	payload.color      = envColor * _EnvironmentExposure;
+	payload.positionWS = float3(0,0,0);
 }
+
+[shader("miss")]
+void ShadowMissShader(inout ShadowRayPayload payload : SV_RayPayload)
+{
+    payload.shadowValue = 1.0;
+}
+
 
 [shader("raygeneration")]
 void RaygenShader()
@@ -58,7 +66,30 @@ void RaygenShader()
              ray,
              payload);
          
-     float4 finalColor = float4(payload.color, 1.0);
-        
+    float4 finalColor = float4(payload.color, 1.0);
+     
+    //-- Directional light shadow raycast ------------------------------------------------
+    RayDesc shadowRay;
+    shadowRay.Origin    = payload.positionWS;
+    shadowRay.Direction = _WorldSpaceLightPos0.xyz;
+    shadowRay.TMin      = 0.0001;
+    shadowRay.TMax      = 1e20f;     
+    
+    ShadowRayPayload shadowPayload;
+    shadowPayload.shadowValue = 0.55;
+    
+    
+    const uint shadowMissShaderID = 1;
+    TraceRay(_SceneAccelerationStructure,
+             RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH | RAY_FLAG_SKIP_CLOSEST_HIT_SHADER | RAY_FLAG_CULL_BACK_FACING_TRIANGLES,
+             0xFF,               // InstanceInclusionMask
+             0,                  // RayContributionToHitGroupIndex
+             1,                  // MultiplierForGeometryContributionToHitGroupIndex
+             shadowMissShaderID,
+             shadowRay,
+             shadowPayload);
+
+    finalColor *= shadowPayload.shadowValue;
+       
     _RenderTarget[dispatchIdx] = finalColor;    
 }
