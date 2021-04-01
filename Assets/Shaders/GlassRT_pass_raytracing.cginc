@@ -25,6 +25,7 @@ float     _Metalness;
 float     _Smoothness;
 float     _IOR;
 float     _SpecularPower;
+int       _MaxBounces;
 
 
 Vertex FetchVertex(uint vertexIndex)
@@ -102,10 +103,10 @@ void ClosestHitMain(inout RayPayload payload, AttributeData attribs : SV_Interse
 
     //-------------------------------
     float3 positionWS = mul(ObjectToWorld(), float4(v.positionOS, 1.0));
-    //float2 uv         =  v.uv * _MainTex_ST.xy + _MainTex_ST.zw;
-    float4 basecolor  = /*_MainTex.SampleLevel(sampler_linear_repeat, uv, 0) **/ _Color;
+    float2 uv         =  v.uv * _MainTex_ST.xy + _MainTex_ST.zw;
+    float4 basecolor  = _MainTex.SampleLevel(sampler_linear_repeat, uv, 0) * _Color;
     
-    if (payload.bounceIndex < 5)
+    if (payload.bounceIndex < _MaxBounces)
     {        
         bool isFrontFace = (HitKind() == HIT_KIND_TRIANGLE_FRONT_FACE);
 

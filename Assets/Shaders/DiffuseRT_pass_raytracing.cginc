@@ -45,8 +45,6 @@ Vertex InterpolateVertices(Vertex v0, Vertex v1, Vertex v2, float3 barycentrics)
 [shader("closesthit")]
 void ClosestHitMain(inout RayPayload payload, AttributeData attribs : SV_IntersectionAttributes)
 {
-    //BuiltInTriangleIntersectionAttributes dd; $$$
-
     uint3 triangleIndices = UnityRayTracingFetchTriangleIndices(PrimitiveIndex());
 
     Vertex v0, v1, v2;

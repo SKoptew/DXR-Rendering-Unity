@@ -15,7 +15,7 @@ float3 _FrustumBottomLeftDirWS;
 float3 _FrustumHorizDirWS;
 float3 _FrustumVertDirWS;
 
-#pragma max_recursion_depth 10
+#pragma max_recursion_depth 16
 
 
 [shader("miss")]
