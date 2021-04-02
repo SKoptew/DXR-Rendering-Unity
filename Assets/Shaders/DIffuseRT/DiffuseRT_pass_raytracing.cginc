@@ -1,7 +1,7 @@
 #include "UnityShaderVariables.cginc"
 #include "UnityLightingCommon.cginc"
 #include "UnityRaytracingMeshUtils.cginc"
-#include "RayPayload.hlsl"
+#include "../RayPayload.hlsl"
 
 struct AttributeData
 {
