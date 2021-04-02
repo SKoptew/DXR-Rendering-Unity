@@ -161,12 +161,12 @@ void ClosestHitMain(inout RayPayload payload, AttributeData attribs : SV_Interse
         {
             float3 lightDirWS = normalize(_WorldSpaceLightPos0.xyz - positionWS);
             payload.color += pow(max(0.0, dot(reflectedRayWS, lightDirWS)), _SpecularPower) * (_LightColor0.rgb * _LightColor0.w) * basecolor;
-            payload.positionWS = positionWS;
+            payload.positionWS = float4(positionWS, 1.0);
         }
     }
     else
     {
         payload.color      = basecolor;
-        payload.positionWS = positionWS;
+        payload.positionWS = float4(positionWS, 1.0);
     }
 }

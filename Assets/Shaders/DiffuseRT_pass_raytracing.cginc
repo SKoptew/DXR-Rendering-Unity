@@ -71,5 +71,5 @@ void ClosestHitMain(inout RayPayload payload, AttributeData attribs : SV_Interse
     float3 col = basecolor.rgb * _LightColor0.rgb * _LightColor0.w * attenuation;
 
     payload.color      = float4(col, basecolor.a);
-    payload.positionWS = positionWS;
+    payload.positionWS = float4(positionWS, 1.0);
 }

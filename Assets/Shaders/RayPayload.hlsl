@@ -1,7 +1,7 @@
 struct RayPayload
 {
     float3 color;
-    float3 positionWS;
+    float4 positionWS;  // .a : 1.0 for geometry hit, 0.0 for miss shader. used for shadowcasting
     uint   bounceIndex;
 };
 
