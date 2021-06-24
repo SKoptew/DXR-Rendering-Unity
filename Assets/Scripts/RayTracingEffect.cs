@@ -8,8 +8,9 @@ public class RayTracingEffect : MonoBehaviour
     public RayTracingAccelerationStructure.RayTracingModeMask rtModeMask = RayTracingAccelerationStructure.RayTracingModeMask.Everything;
     public RayTracingShader rtShader;
     public Cubemap          environmentCubemap;
-    [Range(0,8)]
-    public float            environmentExposure = 1f;
+    
+    [Range(0,8)] public float environmentExposure = 1f;
+    [Range(0,1)] public float shadowBrightness    = 0.15f;
 
     private RenderTexture                   _rtTargetTexture;
     private RayTracingAccelerationStructure _rtAccStructure;
@@ -26,6 +27,7 @@ public class RayTracingEffect : MonoBehaviour
         public static readonly int _RenderTarget               = Shader.PropertyToID("_RenderTarget");
         public static readonly int _EnvironmentTex             = Shader.PropertyToID("_EnvironmentTex");
         public static readonly int _EnvironmentGamma           = Shader.PropertyToID("_EnvironmentExposure");
+        public static readonly int _ShadowBrightness           = Shader.PropertyToID("_ShadowBrightness");
         public static readonly int _InvViewMatrix              = Shader.PropertyToID("_InvViewMatrix");
         public static readonly int _FrustumBottomLeftDirWS     = Shader.PropertyToID("_FrustumBottomLeftDirWS");
         public static readonly int _FrustumHorizDirWS          = Shader.PropertyToID("_FrustumHorizDirWS");
@@ -66,6 +68,7 @@ public class RayTracingEffect : MonoBehaviour
         rtShader.SetMatrix( ShaderID._InvViewMatrix, cam.cameraToWorldMatrix);
         rtShader.SetTexture(ShaderID._EnvironmentTex, environmentCubemap);
         rtShader.SetFloat  (ShaderID._EnvironmentGamma, Mathf.GammaToLinearSpace(environmentExposure));
+        rtShader.SetFloat  (ShaderID._ShadowBrightness, shadowBrightness);
 
         var camOrigin = cam.transform.position;
         var frustumBottomLeftDirWS  = (cam.ViewportToWorldPoint(new Vector3(0, 0, cam.nearClipPlane)) - camOrigin).normalized;

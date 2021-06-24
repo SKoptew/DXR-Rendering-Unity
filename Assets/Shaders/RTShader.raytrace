@@ -10,6 +10,7 @@ float4x4            _InvViewMatrix;
 TextureCube<half3> _EnvironmentTex;
 SamplerState        sampler_linear_repeat;
 half               _EnvironmentExposure;
+half               _ShadowBrightness;
 
 float3 _FrustumBottomLeftDirWS;
 float3 _FrustumHorizDirWS;
@@ -78,7 +79,7 @@ void RaygenShader()
         shadowRay.TMax      = 1e20f;     
         
         ShadowRayPayload shadowPayload;
-        shadowPayload.shadowValue = 0.15;
+        shadowPayload.shadowValue = _ShadowBrightness; // if the ray misses -> shadowValue = 1.0
         
         
         const uint shadowMissShaderID = 1;
