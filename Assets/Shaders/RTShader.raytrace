@@ -16,6 +16,9 @@ float3 _FrustumBottomLeftDirWS;
 float3 _FrustumHorizDirWS;
 float3 _FrustumVertDirWS;
 
+//-- global variables
+half2 _T_minmax;
+
 #pragma max_recursion_depth 16
 
 
@@ -49,8 +52,8 @@ void RaygenShader()
     RayDesc ray;
     ray.Origin    = float3(_InvViewMatrix[0][3], _InvViewMatrix[1][3], _InvViewMatrix[2][3]);
     ray.Direction = viewDirWS;
-    ray.TMin      = 0.0;
-    ray.TMax      = 1e20f;    
+    ray.TMin      = _T_minmax.x;
+    ray.TMax      = _T_minmax.y;    
     
     RayPayload payload;
     payload.color = float3(0,0,0);
@@ -75,8 +78,8 @@ void RaygenShader()
         RayDesc shadowRay;
         shadowRay.Origin    = payload.positionWS.xyz;
         shadowRay.Direction = _WorldSpaceLightPos0.xyz;
-        shadowRay.TMin      = 0.0001;
-        shadowRay.TMax      = 1e20f;     
+        shadowRay.TMin      = _T_minmax.x;
+        shadowRay.TMax      = _T_minmax.y;     
         
         ShadowRayPayload shadowPayload;
         shadowPayload.shadowValue = _ShadowBrightness; // if the ray misses -> shadowValue = 1.0

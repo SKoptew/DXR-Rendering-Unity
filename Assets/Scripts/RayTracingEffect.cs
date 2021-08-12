@@ -12,6 +12,9 @@ public class RayTracingEffect : MonoBehaviour
     [Range(0,8)] public float environmentExposure = 1f;
     [Range(0,1)] public float shadowBrightness    = 0.15f;
 
+    public float tMin = 0.001f;
+    public float tMax = 1000f;
+
     private RenderTexture                   _rtTargetTexture;
     private RayTracingAccelerationStructure _rtAccStructure;
 
@@ -21,6 +24,7 @@ public class RayTracingEffect : MonoBehaviour
     private static class ShaderID
     {
         //-- global
+        public static readonly int _T_minmax = Shader.PropertyToID("_T_minmax");
 
         //-- local
         public static readonly int _SceneAccelerationStructure = Shader.PropertyToID("_SceneAccelerationStructure");
@@ -59,6 +63,7 @@ public class RayTracingEffect : MonoBehaviour
         rtShader.SetShaderPass("RTPass");
         
         //- set global variables, used in all material shaders
+        Shader.SetGlobalVector(ShaderID._T_minmax,  new Vector2(tMin, tMax));
         
         //-- set local RT raygen shader variables
         _rtAccStructure.Build();

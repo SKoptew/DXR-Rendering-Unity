@@ -27,6 +27,9 @@ float     _IOR;
 float     _SpecularPower;
 int       _MaxBounces;
 
+//-- global variables
+half2 _T_minmax;
+
 
 Vertex FetchVertex(uint vertexIndex)
 {
@@ -128,8 +131,8 @@ void ClosestHitMain(inout RayPayload payload, AttributeData attribs : SV_Interse
             RayDesc ray;
             ray.Origin    = positionWS;
             ray.Direction = refractedRayWS;
-            ray.TMin      = 0.0001f;
-            ray.TMax      = 1e20f;
+            ray.TMin      = _T_minmax.x;
+            ray.TMax      = _T_minmax.y;
         
             TraceRay(_SceneAccelerationStructure, 0, 0xFF, 0, 1, 0, ray, refractedPayload);
         }
@@ -144,8 +147,8 @@ void ClosestHitMain(inout RayPayload payload, AttributeData attribs : SV_Interse
             RayDesc ray;
             ray.Origin    = positionWS;
             ray.Direction = reflectedRayWS;
-            ray.TMin      = 0.0001f;
-            ray.TMax      = 1e20f;
+            ray.TMin      = _T_minmax.x;
+            ray.TMax      = _T_minmax.y;
         
             TraceRay(_SceneAccelerationStructure, 0, 0xFF, 0, 1, 0, ray, reflectedRayPayload);            
         }
